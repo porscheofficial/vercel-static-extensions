@@ -1,0 +1,36 @@
+{
+	"version": 3,
+	"routes": [
+		{
+			"src": "^/.*$",
+			"middlewareRawSrc": [],
+			"middlewarePath": "middleware",
+			"continue": true,
+			"override": true
+		},
+		{
+			"handle": "filesystem"
+		},
+		{
+			"src": "^/api(/.*)?$",
+			"status": 404
+		},
+		{
+			"handle": "error"
+		},
+		{
+			"status": 404,
+			"src": "^(?!/api).*$",
+			"dest": "/404.html"
+		},
+		{
+			"handle": "miss"
+		},
+		{
+			"src": "^/api/(.+)(?:\\.(?:js))$",
+			"dest": "/api/$1",
+			"check": true
+		}
+	],
+	"crons": []
+}

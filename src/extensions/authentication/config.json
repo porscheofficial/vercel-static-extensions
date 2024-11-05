@@ -1,0 +1,44 @@
+{
+	"assets": [
+		{
+			"id": "auth.config.ts",
+			"input": "auth.config.ts",
+			"output": "auth.config.js",
+			"esbuild": {
+				"bundle": true
+			}
+		},
+		{
+			"id": "middleware.ts",
+			"input": "middleware.ts",
+			"output": "middleware.js"
+		},
+		{
+			"id": "api/auth/[...nextauth]/route.ts",
+			"input": "api/auth/[...nextauth]/route.ts",
+			"output": "api/auth/[...nextauth]/route.js"
+		}
+	],
+	"vercelDeployment": {
+		"functions": [
+			{
+				"id": "middleware.ts",
+				"dependenciesById": ["auth.config.ts"],
+				"vcConfig": {
+					"runtime": "edge",
+					"deploymentTarget": "v8-worker",
+					"entrypoint": "middleware.js"
+				}
+			},
+			{
+				"id": "api/auth/[...nextauth]/route.ts",
+				"dependenciesById": ["auth.config.ts"],
+				"vcConfig": {
+					"runtime": "edge",
+					"deploymentTarget": "v8-worker",
+					"entrypoint": "api/auth/[...nextauth]/route.js"
+				}
+			}
+		]
+	}
+}
