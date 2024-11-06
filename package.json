@@ -1,35 +1,33 @@
 {
-  "name": "@porscheofficial/vercel-static-extensions",
-  "version": "0.0.0",
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
-  },
-  "packageManager": "yarn@3.2.3",
-  "devDependencies": {
-    "@biomejs/biome": "1.9.2",
-    "@types/node": "22.7.2",
-    "ts-node": "10.9.2",
-    "typescript": "5.6.2"
-  },
-  "dependencies": {
-    "esbuild": "0.24.0",
-    "next-auth": "^5.0.0-beta.25"
-  },
-  "peerDependencies": {
-    "next-auth": ">5",
-    "esbuild": "0.24.0"
-  },
-  "scripts": {
-    "dev": "ts-node src/cli.ts",
-    "build": "node scripts/build.mjs"
-  },
-  "files": [
-    "dist"
-  ],
-  "engines": {
-    "node": ">= 20"
-  },
-  "bin": {
-    "@porscheofficial/vercel-static-extensions": "dist/cli.js"
-  }
+	"name": "@porscheofficial/vercel-static-extensions",
+	"version": "0.0.0",
+	"publishConfig": {
+		"registry": "https://npm.pkg.github.com"
+	},
+	"packageManager": "yarn@3.2.3",
+	"devDependencies": {
+		"@biomejs/biome": "1.9.2",
+		"@types/node": "22.7.2",
+		"ts-node": "10.9.2",
+		"typescript": "5.6.2"
+	},
+	"dependencies": {
+		"esbuild": "0.24.0",
+		"next-auth": "^5.0.0-beta.25"
+	},
+	"peerDependencies": {
+		"next-auth": ">5",
+		"esbuild": "0.24.0"
+	},
+	"scripts": {
+		"dev": "ts-node src/cli.ts",
+		"build": "node scripts/build.mjs"
+	},
+	"files": ["dist"],
+	"engines": {
+		"node": ">= 20"
+	},
+	"bin": {
+		"@porscheofficial/vercel-static-extensions": "dist/cli.js"
+	}
 }

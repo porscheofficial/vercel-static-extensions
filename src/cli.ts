@@ -1,24 +1,23 @@
 #!/usr/bin/env node
-import {buildExtension} from "./extensionsBuilder";
+import { buildExtension } from "./extensionsBuilder";
 
 export interface Config {
-    "staticDirectory": string,
-    "extensions": {
-        "authentication"?: {
-            "provider": "microsoft-entra-id",
-            "environmentVariables": {
-                "AUTH_MICROSOFT_ENTRA_CLIENT_ID": string,
-                "AUTH_MICROSOFT_ENTRA_ID_SECRET": string,
-                "AUTH_MICROSOFT_ENTRA_ID_TENANT_ID": string,
-                "AUTH_SECRET": string,
-            }
-        }
-    }
+	staticDirectory: string;
+	extensions: {
+		authentication?: {
+			provider: "microsoft-entra-id";
+			environmentVariables: {
+				AUTH_MICROSOFT_ENTRA_CLIENT_ID: string;
+				AUTH_MICROSOFT_ENTRA_ID_SECRET: string;
+				AUTH_MICROSOFT_ENTRA_ID_TENANT_ID: string;
+				AUTH_SECRET: string;
+			};
+		};
+	};
 }
 
-
-import path from 'node:path';
-import fs from 'node:fs';
+import fs from "node:fs";
+import path from "node:path";
 
 const CWD = process.cwd();
 const EXTENSIONS_ROOT_DIR = path.join(__dirname, "extensions");
@@ -42,40 +41,44 @@ const TMP_DIR = path.join(CWD, ".vercel-static-extensions");
 // ## Solution
 // We decided implement the Vercel Output API to tell Vercel exactly how to run our artifacts.
 
-
 // First load the configuration file if there's one
 // The naming convention is vercel-static-extensions.config.json
 
 let exitCode = 0;
-let cleanupDirectories: string[] = [];
+const cleanupDirectories: string[] = [];
 
 // Default Values
 let config: Config = {
-    staticDirectory: 'build',
-    extensions: {
-        authentication: {
-            provider: 'microsoft-entra-id',
-            environmentVariables: {
-                AUTH_MICROSOFT_ENTRA_CLIENT_ID: 'AUTH_MICROSOFT_ENTRA_CLIENT_ID',
-                AUTH_MICROSOFT_ENTRA_ID_SECRET: 'AUTH_MICROSOFT_ENTRA_ID_SECRET',
-                AUTH_MICROSOFT_ENTRA_ID_TENANT_ID: 'AUTH_MICROSOFT_ENTRA_ID_TENANT_ID',
-                AUTH_SECRET: 'AUTH_SECRET',
-            }
-        }
-    }
+	staticDirectory: "build",
+	extensions: {
+		authentication: {
+			provider: "microsoft-entra-id",
+			environmentVariables: {
+				AUTH_MICROSOFT_ENTRA_CLIENT_ID: "AUTH_MICROSOFT_ENTRA_CLIENT_ID",
+				AUTH_MICROSOFT_ENTRA_ID_SECRET: "AUTH_MICROSOFT_ENTRA_ID_SECRET",
+				AUTH_MICROSOFT_ENTRA_ID_TENANT_ID: "AUTH_MICROSOFT_ENTRA_ID_TENANT_ID",
+				AUTH_SECRET: "AUTH_SECRET",
+			},
+		},
+	},
 };
 
 const configPath = path.join(CWD, "vercel-static-extensions.config.json");
 
 try {
-    if (fs.existsSync(configPath)) {
-        config = JSON.parse(fs.readFileSync(configPath).toString());
-        console.info("1. Loaded Configuration File");
-    } else {
-        console.info(`1. No Configuration File found (${configPath}). Using default values.`);
-    }
-} catch(e) {
-    console.info(`1. Can't load Configuration File (${configPath}). Using default values.`, e);
+	if (fs.existsSync(configPath)) {
+		config = JSON.parse(fs.readFileSync(configPath).toString());
+		console.info("1. Loaded Configuration File");
+	} else {
+		console.info(
+			`1. No Configuration File found (${configPath}). Using default values.`,
+		);
+	}
+} catch (e) {
+	console.info(
+		`1. Can't load Configuration File (${configPath}). Using default values.`,
+		e,
+	);
 }
 
 const STATIC_ASSETS_DIR = path.join(CWD, config.staticDirectory);
@@ -85,55 +88,57 @@ const VERCEL_BUILD_OUTPUT = path.join(VERCEL_DIR, "output");
 
 // Only run the script, if the build directory exists
 if (!fs.existsSync(STATIC_ASSETS_DIR)) {
-    throw new Error(
-        `No static files found in ${STATIC_ASSETS_DIR}. Please run this script after your static files have been created or updated the staticDirectory.`,
-    );
+	throw new Error(
+		`No static files found in ${STATIC_ASSETS_DIR}. Please run this script after your static files have been created or updated the staticDirectory.`,
+	);
 }
 
 try {
-    // Create a clean Vercel Build Output Directory
-    if (fs.existsSync(VERCEL_BUILD_OUTPUT)) {
-        fs.rmSync(VERCEL_BUILD_OUTPUT, {recursive: true});
-    }
-    fs.mkdirSync(VERCEL_BUILD_OUTPUT, {recursive: true});
+	// Create a clean Vercel Build Output Directory
+	if (fs.existsSync(VERCEL_BUILD_OUTPUT)) {
+		fs.rmSync(VERCEL_BUILD_OUTPUT, { recursive: true });
+	}
+	fs.mkdirSync(VERCEL_BUILD_OUTPUT, { recursive: true });
 
-    // Create a clean tmp directory
-    if (fs.existsSync(TMP_DIR)) {
-        fs.rmSync(TMP_DIR, {recursive: true});
-    }
-    fs.mkdirSync(TMP_DIR, {recursive: true});
-    cleanupDirectories.push(TMP_DIR);
+	// Create a clean tmp directory
+	if (fs.existsSync(TMP_DIR)) {
+		fs.rmSync(TMP_DIR, { recursive: true });
+	}
+	fs.mkdirSync(TMP_DIR, { recursive: true });
+	cleanupDirectories.push(TMP_DIR);
 
-    // First move the static files to the output directory
-    const staticFilesOutputDir = path.join(VERCEL_BUILD_OUTPUT, "static");
-    fs.cpSync(STATIC_ASSETS_DIR, staticFilesOutputDir, {
-        recursive: true,
-        errorOnExist: true,
-    });
+	// First move the static files to the output directory
+	const staticFilesOutputDir = path.join(VERCEL_BUILD_OUTPUT, "static");
+	fs.cpSync(STATIC_ASSETS_DIR, staticFilesOutputDir, {
+		recursive: true,
+		errorOnExist: true,
+	});
 } catch (e) {
-    fs.rmSync(VERCEL_BUILD_OUTPUT, {recursive: true});
-    console.error("Error while moving static files", e);
-    exitCode = 1;
+	fs.rmSync(VERCEL_BUILD_OUTPUT, { recursive: true });
+	console.error("Error while moving static files", e);
+	exitCode = 1;
 }
 
 // Error Handling
 try {
-    if (exitCode !== 0) {
-        fs.rmSync(VERCEL_BUILD_OUTPUT, {recursive: true});
-    }
+	if (exitCode !== 0) {
+		fs.rmSync(VERCEL_BUILD_OUTPUT, { recursive: true });
+	}
 } catch {
-    console.error(`Unable to cleanup the build directory. Please delete ${VERCEL_BUILD_OUTPUT} manually.`);
+	console.error(
+		`Unable to cleanup the build directory. Please delete ${VERCEL_BUILD_OUTPUT} manually.`,
+	);
 }
 if (exitCode !== 0) {
-    process.exit(exitCode);
+	process.exit(exitCode);
 }
 
-
 const enabledExtensions = Object.keys(config.extensions);
-const extensionsDirectories: string[] = fs.readdirSync(EXTENSIONS_ROOT_DIR).filter((extension: string) => {
-    return enabledExtensions.includes(extension);
-});
-
+const extensionsDirectories: string[] = fs
+	.readdirSync(EXTENSIONS_ROOT_DIR)
+	.filter((extension: string) => {
+		return enabledExtensions.includes(extension);
+	});
 
 // Iterate through all enabled extensions
 // First build the artifacts according to the config
@@ -147,94 +152,107 @@ const extensionsDirectories: string[] = fs.readdirSync(EXTENSIONS_ROOT_DIR).filt
 const extensionsOutputs: ReturnType<typeof buildExtension>[] = [];
 let indexExtension = 0;
 for (const extension of extensionsDirectories) {
-    indexExtension += 1;
-    console.group(`2. Build extension ${indexExtension}/${extensionsDirectories.length}: ${extension}`);
+	indexExtension += 1;
+	console.group(
+		`2. Build extension ${indexExtension}/${extensionsDirectories.length}: ${extension}`,
+	);
 
-    let esbuildDefine: Record<string,string> = {};
-    if(extension === "authentication" && config?.extensions?.authentication) {
-        esbuildDefine = {
-            "process.env.AUTH_MICROSOFT_ENTRA_CLIENT_ID": `process.env.${config.extensions.authentication.environmentVariables.AUTH_MICROSOFT_ENTRA_CLIENT_ID ?? "AUTH_MICROSOFT_ENTRA_CLIENT_ID"}`,
-            "process.env.AUTH_MICROSOFT_ENTRA_ID_SECRET": `process.env.${config.extensions.authentication.environmentVariables.AUTH_MICROSOFT_ENTRA_ID_SECRET ?? "AUTH_MICROSOFT_ENTRA_ID_SECRET"}`,
-            "process.env.AUTH_MICROSOFT_ENTRA_ID_TENANT_ID": `process.env.${config.extensions.authentication.environmentVariables.AUTH_MICROSOFT_ENTRA_ID_TENANT_ID ?? "AUTH_MICROSOFT_ENTRA_ID_TENANT_ID"}`,
-            "process.env.AUTH_SECRET": `process.env.${config.extensions.authentication.environmentVariables.AUTH_SECRET ?? "AUTH_SECRET"}`,
-        }
-    }
+	let esbuildDefine: Record<string, string> = {};
+	if (extension === "authentication" && config?.extensions?.authentication) {
+		esbuildDefine = {
+			"process.env.AUTH_MICROSOFT_ENTRA_CLIENT_ID": `process.env.${config.extensions.authentication.environmentVariables.AUTH_MICROSOFT_ENTRA_CLIENT_ID ?? "AUTH_MICROSOFT_ENTRA_CLIENT_ID"}`,
+			"process.env.AUTH_MICROSOFT_ENTRA_ID_SECRET": `process.env.${config.extensions.authentication.environmentVariables.AUTH_MICROSOFT_ENTRA_ID_SECRET ?? "AUTH_MICROSOFT_ENTRA_ID_SECRET"}`,
+			"process.env.AUTH_MICROSOFT_ENTRA_ID_TENANT_ID": `process.env.${config.extensions.authentication.environmentVariables.AUTH_MICROSOFT_ENTRA_ID_TENANT_ID ?? "AUTH_MICROSOFT_ENTRA_ID_TENANT_ID"}`,
+			"process.env.AUTH_SECRET": `process.env.${config.extensions.authentication.environmentVariables.AUTH_SECRET ?? "AUTH_SECRET"}`,
+		};
+	}
 
-    const buildResult = buildExtension({
-        extension,
-        TMP_DIR,
-        esbuildDefine,
-    });
-    extensionsOutputs.push(buildResult);
-    if (!buildResult.isSuccessful) {
-        console.error(`Error while building extension ${extension}.`);
-        exitCode = 1;
-        break;
-    }
-    console.groupEnd();
+	const buildResult = buildExtension({
+		extension,
+		TMP_DIR,
+		esbuildDefine,
+	});
+	extensionsOutputs.push(buildResult);
+	if (!buildResult.isSuccessful) {
+		console.error(`Error while building extension ${extension}.`);
+		exitCode = 1;
+		break;
+	}
+	console.groupEnd();
 }
 
 // Error Handling
 try {
-    if (exitCode !== 0) {
-        [...cleanupDirectories,VERCEL_DIR].forEach((dir) => {
-            fs.rmSync(dir, {recursive: true});
-        });
-    }
+	if (exitCode !== 0) {
+		[...cleanupDirectories, VERCEL_DIR].forEach((dir) => {
+			fs.rmSync(dir, { recursive: true });
+		});
+	}
 } catch {
-    console.error(`Unable to cleanup the build files. Please delete them manually: ${cleanupDirectories.join(", ")}`);
+	console.error(
+		`Unable to cleanup the build files. Please delete them manually: ${cleanupDirectories.join(", ")}`,
+	);
 }
 if (exitCode !== 0) {
-    process.exit(exitCode);
+	process.exit(exitCode);
 }
-
 
 // Now we move the created artifacts to the Vercel Output Directory
 // .vercel/output/functions/<functionName>.func/<functionName>.js
 console.info("3. Move Extension Artifacts into Vercel Output Directory");
 extensionsOutputs.forEach((extensionOutput) => {
-    try {
-        fs.cpSync(extensionOutput.outputDirectory, path.join(VERCEL_BUILD_OUTPUT, "functions"), {
-            errorOnExist: true,
-            recursive: true,
-        });
-    } catch (e) {
-        console.error(`Error while moving extension ${extensionOutput} to Vercel Output Directory`, e);
-        exitCode = 1;
-    }
+	try {
+		fs.cpSync(
+			extensionOutput.outputDirectory,
+			path.join(VERCEL_BUILD_OUTPUT, "functions"),
+			{
+				errorOnExist: true,
+				recursive: true,
+			},
+		);
+	} catch (e) {
+		console.error(
+			`Error while moving extension ${extensionOutput} to Vercel Output Directory`,
+			e,
+		);
+		exitCode = 1;
+	}
 });
 // Error Handling
 try {
-    if (exitCode !== 0) {
-        [...cleanupDirectories,VERCEL_DIR].forEach((dir) => {
-            fs.rmSync(dir, {recursive: true});
-        });
-    }
+	if (exitCode !== 0) {
+		[...cleanupDirectories, VERCEL_DIR].forEach((dir) => {
+			fs.rmSync(dir, { recursive: true });
+		});
+	}
 } catch {
-    console.error(`Unable to cleanup the build files. Please delete them manually: ${cleanupDirectories.join(", ")}`);
+	console.error(
+		`Unable to cleanup the build files. Please delete them manually: ${cleanupDirectories.join(", ")}`,
+	);
 }
 if (exitCode !== 0) {
-    process.exit(exitCode);
+	process.exit(exitCode);
 }
-
 
 // Finally create the Vercel Output Config
 // Write the Vercel Output Config
 try {
-    console.info(`4. Copy config.json into ${VERCEL_BUILD_OUTPUT}`);
-    fs.cpSync(
-        path.join(EXTENSIONS_ROOT_DIR, "vercel-config.json"),
-        path.join(VERCEL_BUILD_OUTPUT, "config.json"),
-    );
+	console.info(`4. Copy config.json into ${VERCEL_BUILD_OUTPUT}`);
+	fs.cpSync(
+		path.join(EXTENSIONS_ROOT_DIR, "vercel-config.json"),
+		path.join(VERCEL_BUILD_OUTPUT, "config.json"),
+	);
 } catch (e) {
-    console.error("Error while copying config.json", e);
+	console.error("Error while copying config.json", e);
 }
 
 // Clean up
 try {
-    cleanupDirectories.forEach((dir) => {
-        fs.rmSync(dir, {recursive: true});
-    });
+	cleanupDirectories.forEach((dir) => {
+		fs.rmSync(dir, { recursive: true });
+	});
 } catch {
-    console.error(`Unable to cleanup the build files. Please delete them manually: ${cleanupDirectories.join(", ")}`);
+	console.error(
+		`Unable to cleanup the build files. Please delete them manually: ${cleanupDirectories.join(", ")}`,
+	);
 }
