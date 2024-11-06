@@ -20,16 +20,16 @@
     "esbuild": "0.24.0"
   },
   "scripts": {
-    "cli": "ts-node src/cli.ts",
+    "dev": "ts-node src/cli.ts",
     "build": "node scripts/build.mjs"
   },
   "files": [
     "dist"
   ],
   "engines": {
-    "node": ">= 16"
+    "node": ">= 20"
   },
   "bin": {
-    "vercel-static-extensions": "dist/cli.js"
+    "@porscheofficial/vercel-static-extensions": "dist/cli.js"
   }
 }
