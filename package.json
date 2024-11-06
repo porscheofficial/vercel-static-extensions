@@ -10,12 +10,23 @@
   },
   "dependencies": {
     "esbuild": "0.24.0",
-    "next-auth": "^5.0.0-beta.20"
+    "next-auth": "^5.0.0-beta.25"
   },
   "peerDependencies": {
-    "next-auth": ">5"
+    "next-auth": ">5",
+    "esbuild": "0.24.0"
   },
   "scripts": {
-    "cli": "ts-node src/cli.ts"
+    "cli": "ts-node src/cli.ts",
+    "build": "node scripts/build.mjs"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">= 16"
+  },
+  "bin": {
+    "vercel-static-extensions": "dist/cli.js"
   }
 }

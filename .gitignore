@@ -124,6 +124,6 @@ dist
 *.csr
 *.key
 
-build/
+build
 vercel-static-extensions.config.json
 .vercel
