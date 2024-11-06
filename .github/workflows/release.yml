@@ -30,13 +30,14 @@ jobs:
       - name: Set up GitHub Packages auth
         run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" > ~/.npmrc
 
+      - name: Bump Version
+        run: npm version ${{ github.event.inputs.version }}
+
       - name: Publish to GitHub Packages
         run: npm publish --registry=https://npm.pkg.github.com
 
-      - name: Release
-        run: |
-          npm version ${{ github.event.inputs.version }}
-          git push --follow-tags
+      - name: Push Git Tag
+        run: git push --follow-tags
 
   
     
