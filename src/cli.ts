@@ -80,7 +80,8 @@ try {
 
 const STATIC_ASSETS_DIR = path.join(CWD, config.staticDirectory);
 // By convention, the Output Directory needs to be called ".vercel"
-const VERCEL_BUILD_OUTPUT = path.join(CWD, ".vercel", "output");
+const VERCEL_DIR = path.join(CWD, ".vercel");
+const VERCEL_BUILD_OUTPUT = path.join(VERCEL_DIR, "output");
 
 // Only run the script, if the build directory exists
 if (!fs.existsSync(STATIC_ASSETS_DIR)) {
@@ -176,7 +177,7 @@ for (const extension of extensionsDirectories) {
 // Error Handling
 try {
     if (exitCode !== 0) {
-        cleanupDirectories.forEach((dir) => {
+        [...cleanupDirectories,VERCEL_DIR].forEach((dir) => {
             fs.rmSync(dir, {recursive: true});
         });
     }
@@ -205,7 +206,7 @@ extensionsOutputs.forEach((extensionOutput) => {
 // Error Handling
 try {
     if (exitCode !== 0) {
-        cleanupDirectories.forEach((dir) => {
+        [...cleanupDirectories,VERCEL_DIR].forEach((dir) => {
             fs.rmSync(dir, {recursive: true});
         });
     }
@@ -227,7 +228,6 @@ try {
     );
 } catch (e) {
     console.error("Error while copying config.json", e);
-    process.exit(1);
 }
 
 // Clean up
