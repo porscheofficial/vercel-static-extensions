@@ -184,9 +184,9 @@ for (const extension of extensionsDirectories) {
 // Error Handling
 try {
 	if (exitCode !== 0) {
-		[...cleanupDirectories, VERCEL_DIR].forEach((dir) => {
+		for (const dir of [...cleanupDirectories, VERCEL_DIR]) {
 			fs.rmSync(dir, { recursive: true });
-		});
+		}
 	}
 } catch {
 	console.error(
@@ -200,7 +200,7 @@ if (exitCode !== 0) {
 // Now we move the created artifacts to the Vercel Output Directory
 // .vercel/output/functions/<functionName>.func/<functionName>.js
 console.info("3. Move Extension Artifacts into Vercel Output Directory");
-extensionsOutputs.forEach((extensionOutput) => {
+for (const extensionOutput of extensionsOutputs) {
 	try {
 		fs.cpSync(
 			extensionOutput.outputDirectory,
@@ -217,13 +217,14 @@ extensionsOutputs.forEach((extensionOutput) => {
 		);
 		exitCode = 1;
 	}
-});
+}
+
 // Error Handling
 try {
 	if (exitCode !== 0) {
-		[...cleanupDirectories, VERCEL_DIR].forEach((dir) => {
+		for (const dir of [...cleanupDirectories, VERCEL_DIR]) {
 			fs.rmSync(dir, { recursive: true });
-		});
+		}
 	}
 } catch {
 	console.error(
@@ -248,9 +249,9 @@ try {
 
 // Clean up
 try {
-	cleanupDirectories.forEach((dir) => {
+	for (const dir of cleanupDirectories) {
 		fs.rmSync(dir, { recursive: true });
-	});
+	}
 } catch {
 	console.error(
 		`Unable to cleanup the build files. Please delete them manually: ${cleanupDirectories.join(", ")}`,

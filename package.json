@@ -4,7 +4,6 @@
 	"publishConfig": {
 		"registry": "https://npm.pkg.github.com"
 	},
-	"packageManager": "yarn@3.2.3",
 	"devDependencies": {
 		"@biomejs/biome": "1.9.2",
 		"@types/node": "22.7.2",

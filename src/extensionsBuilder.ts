@@ -201,16 +201,16 @@ export const buildExtension = ({
 			"Something went wrong while building the extension. Cleaning up the directories now.",
 			e,
 		);
-		cleanupDirs.forEach((dir) => {
+		for (const dir of cleanupDirs) {
 			fs.rmSync(dir, { recursive: true });
-		});
+		}
 		return {
 			cleanupDirectories: cleanupDirs,
 			outputDirectory: extensionOutputPath,
 			isSuccessful: false,
 		};
 	}
-	console.info(`3. Remove Build Files of Extension.`);
+	console.info("3. Remove Build Files of Extension.");
 	// Finally clean up the extension build directory
 	fs.rmSync(extensionBuildPath, { recursive: true });
 	return {
