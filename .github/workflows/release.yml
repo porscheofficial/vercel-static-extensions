@@ -30,8 +30,13 @@ jobs:
       - name: Set up GitHub Packages auth
         run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" > ~/.npmrc
 
+      - name: Configure Git user
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
       - name: Bump Version
-        run: npm version ${{ github.event.inputs.version }}
+        run: npm version ${{ github.event.inputs.version }} ${{ github.event.inputs.version }}
 
       - name: Publish to GitHub Packages
         run: npm publish --registry=https://npm.pkg.github.com
