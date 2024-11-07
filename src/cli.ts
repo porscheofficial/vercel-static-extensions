@@ -23,24 +23,6 @@ const CWD = process.cwd();
 const EXTENSIONS_ROOT_DIR = path.join(__dirname, "extensions");
 const TMP_DIR = path.join(CWD, ".vercel-static-extensions");
 
-// We encountered some bugs when trying to deploy our assets to Vercel
-// ## First try
-// During build process we created a directory "build" and added the functions via the "api/" directory
-// Unfortunately, Vercel treated all files in that build directory as static files and didn't execute the functions
-// ## Second try
-// We created a vercel.json and pointing to the API Directory. This resulted in an error, because the API Directory is not part of the repository but is only created during build time.
-// The vercel.json seems to be interpreted before the build.
-// ## Third try
-// We create the API directory in the root of the repository and let Vercel transpile the typescript files.
-// Unfortunately, this resulted in an error because next-auth uses __dirname which is not available in the Edge Environment (Middleware).
-// Running esbuild before allows to replace the __dirname variable with an empty string.
-// ## Fourth try – Working Alternative
-// Follow the first approach and create the API directory within the build directory, but don't do that on Vercel but in Github Actions
-// cd into the build directory, and then run "vercel deploy". That works, because then all the assets are already there and Vercel correctly interprets the API files as functions
-// The downside of this approach is, that it costs GitHub Action Minutes.
-// ## Solution
-// We decided implement the Vercel Output API to tell Vercel exactly how to run our artifacts.
-
 // First load the configuration file if there's one
 // The naming convention is vercel-static-extensions.config.json
 
