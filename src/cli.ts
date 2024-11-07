@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+import fs from "node:fs";
+import path from "node:path";
 import { buildExtension } from "./extensionsBuilder";
 
 export interface Config {
@@ -15,20 +17,6 @@ export interface Config {
 		};
 	};
 }
-
-import fs from "node:fs";
-import path from "node:path";
-
-const CWD = process.cwd();
-const EXTENSIONS_ROOT_DIR = path.join(__dirname, "extensions");
-const TMP_DIR = path.join(CWD, ".vercel-static-extensions");
-
-// First load the configuration file if there's one
-// The naming convention is vercel-static-extensions.config.json
-
-let exitCode = 0;
-const cleanupDirectories: string[] = [];
-
 // Default Values
 let config: Config = {
 	staticDirectory: "build",
@@ -45,6 +33,32 @@ let config: Config = {
 	},
 };
 
+const CWD = process.cwd();
+
+const EXTENSIONS_SRC_DIR = path.join(__dirname, "extensions");
+const TMP_DIR = path.join(CWD, ".vercel-static-extensions");
+const STATIC_ASSETS_SRC_DIR = path.join(CWD, config.staticDirectory);
+// By convention, the Output Directory needs to be called ".vercel"
+const VERCEL_OUT_ROOT_DIR = path.join(CWD, ".vercel");
+const VERCEL_BUILD_OUTPUT_DIR = path.join(VERCEL_OUT_ROOT_DIR, "output");
+
+let exitCode = 0;
+const cleanupDirectories: string[] = [];
+
+const cleanup = (directories: string[]) => {
+	try {
+		for (const dir of directories) {
+			fs.rmSync(dir, { recursive: true });
+		}
+	} catch {
+		console.error(
+			`Unable to cleanup the build files. Please delete them manually: ${directories.join(", ")}`,
+		);
+	}
+};
+
+// First load the configuration file if there's one
+// The naming convention is vercel-static-extensions.config.json
 const configPath = path.join(CWD, "vercel-static-extensions.config.json");
 
 try {
@@ -63,24 +77,19 @@ try {
 	);
 }
 
-const STATIC_ASSETS_DIR = path.join(CWD, config.staticDirectory);
-// By convention, the Output Directory needs to be called ".vercel"
-const VERCEL_DIR = path.join(CWD, ".vercel");
-const VERCEL_BUILD_OUTPUT = path.join(VERCEL_DIR, "output");
-
 // Only run the script, if the build directory exists
-if (!fs.existsSync(STATIC_ASSETS_DIR)) {
+if (!fs.existsSync(STATIC_ASSETS_SRC_DIR)) {
 	throw new Error(
-		`No static files found in ${STATIC_ASSETS_DIR}. Please run this script after your static files have been created or updated the staticDirectory.`,
+		`No static files found in ${STATIC_ASSETS_SRC_DIR}. Please run this script after your static files have been created or update the staticDirectory.`,
 	);
 }
 
 try {
 	// Create a clean Vercel Build Output Directory
-	if (fs.existsSync(VERCEL_BUILD_OUTPUT)) {
-		fs.rmSync(VERCEL_BUILD_OUTPUT, { recursive: true });
+	if (fs.existsSync(VERCEL_BUILD_OUTPUT_DIR)) {
+		fs.rmSync(VERCEL_BUILD_OUTPUT_DIR, { recursive: true });
 	}
-	fs.mkdirSync(VERCEL_BUILD_OUTPUT, { recursive: true });
+	fs.mkdirSync(VERCEL_BUILD_OUTPUT_DIR, { recursive: true });
 
 	// Create a clean tmp directory
 	if (fs.existsSync(TMP_DIR)) {
@@ -90,34 +99,26 @@ try {
 	cleanupDirectories.push(TMP_DIR);
 
 	// First move the static files to the output directory
-	const staticFilesOutputDir = path.join(VERCEL_BUILD_OUTPUT, "static");
-	fs.cpSync(STATIC_ASSETS_DIR, staticFilesOutputDir, {
+	const staticFilesOutputDir = path.join(VERCEL_BUILD_OUTPUT_DIR, "static");
+	fs.cpSync(STATIC_ASSETS_SRC_DIR, staticFilesOutputDir, {
 		recursive: true,
 		errorOnExist: true,
 	});
 } catch (e) {
-	fs.rmSync(VERCEL_BUILD_OUTPUT, { recursive: true });
+	fs.rmSync(VERCEL_BUILD_OUTPUT_DIR, { recursive: true });
 	console.error("Error while moving static files", e);
 	exitCode = 1;
 }
 
 // Error Handling
-try {
-	if (exitCode !== 0) {
-		fs.rmSync(VERCEL_BUILD_OUTPUT, { recursive: true });
-	}
-} catch {
-	console.error(
-		`Unable to cleanup the build directory. Please delete ${VERCEL_BUILD_OUTPUT} manually.`,
-	);
-}
 if (exitCode !== 0) {
+	cleanup(cleanupDirectories);
 	process.exit(exitCode);
 }
 
 const enabledExtensions = Object.keys(config.extensions);
 const extensionsDirectories: string[] = fs
-	.readdirSync(EXTENSIONS_ROOT_DIR)
+	.readdirSync(EXTENSIONS_SRC_DIR)
 	.filter((extension: string) => {
 		return enabledExtensions.includes(extension);
 	});
@@ -130,7 +131,7 @@ const extensionsDirectories: string[] = fs
 //
 // This is split, because some artifacts do not need to be deployed as a separate function.
 // Instead, these are dependencies of other functions, and can be copied to the same directory.
-// e.g. the auth.config.js
+// e.g. auth.config.js
 const extensionsOutputs: ReturnType<typeof buildExtension>[] = [];
 let indexExtension = 0;
 for (const extension of extensionsDirectories) {
@@ -164,29 +165,19 @@ for (const extension of extensionsDirectories) {
 }
 
 // Error Handling
-try {
-	if (exitCode !== 0) {
-		for (const dir of [...cleanupDirectories, VERCEL_DIR]) {
-			fs.rmSync(dir, { recursive: true });
-		}
-	}
-} catch {
-	console.error(
-		`Unable to cleanup the build files. Please delete them manually: ${cleanupDirectories.join(", ")}`,
-	);
-}
 if (exitCode !== 0) {
+	cleanup([...cleanupDirectories, VERCEL_OUT_ROOT_DIR]);
 	process.exit(exitCode);
 }
 
-// Now we move the created artifacts to the Vercel Output Directory
+// Now we move the created artifacts into the Vercel Output Directory
 // .vercel/output/functions/<functionName>.func/<functionName>.js
 console.info("3. Move Extension Artifacts into Vercel Output Directory");
 for (const extensionOutput of extensionsOutputs) {
 	try {
 		fs.cpSync(
 			extensionOutput.outputDirectory,
-			path.join(VERCEL_BUILD_OUTPUT, "functions"),
+			path.join(VERCEL_BUILD_OUTPUT_DIR, "functions"),
 			{
 				errorOnExist: true,
 				recursive: true,
@@ -202,40 +193,28 @@ for (const extensionOutput of extensionsOutputs) {
 }
 
 // Error Handling
-try {
-	if (exitCode !== 0) {
-		for (const dir of [...cleanupDirectories, VERCEL_DIR]) {
-			fs.rmSync(dir, { recursive: true });
-		}
-	}
-} catch {
-	console.error(
-		`Unable to cleanup the build files. Please delete them manually: ${cleanupDirectories.join(", ")}`,
-	);
-}
 if (exitCode !== 0) {
+	cleanup([...cleanupDirectories, VERCEL_OUT_ROOT_DIR]);
 	process.exit(exitCode);
 }
 
 // Finally create the Vercel Output Config
 // Write the Vercel Output Config
 try {
-	console.info(`4. Copy config.json into ${VERCEL_BUILD_OUTPUT}`);
+	console.info(`4. Copy config.json into ${VERCEL_BUILD_OUTPUT_DIR}`);
 	fs.cpSync(
-		path.join(EXTENSIONS_ROOT_DIR, "vercel-config.json"),
-		path.join(VERCEL_BUILD_OUTPUT, "config.json"),
+		path.join(EXTENSIONS_SRC_DIR, "vercel-config.json"),
+		path.join(VERCEL_BUILD_OUTPUT_DIR, "config.json"),
 	);
 } catch (e) {
 	console.error("Error while copying config.json", e);
+	exitCode = 1;
 }
 
 // Clean up
-try {
-	for (const dir of cleanupDirectories) {
-		fs.rmSync(dir, { recursive: true });
-	}
-} catch {
-	console.error(
-		`Unable to cleanup the build files. Please delete them manually: ${cleanupDirectories.join(", ")}`,
-	);
+if (exitCode !== 0) {
+	cleanup([...cleanupDirectories, VERCEL_OUT_ROOT_DIR]);
+	process.exit(exitCode);
+} else {
+	cleanup(cleanupDirectories);
 }
