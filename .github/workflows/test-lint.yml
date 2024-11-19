@@ -21,10 +21,12 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Setup Biome CLI
         uses: biomejs/setup-biome@v2
+        with:
+          version: latest
 
       - name: Run Biome
-        run: npx biome ci src scripts
+        run: biome ci src scripts
