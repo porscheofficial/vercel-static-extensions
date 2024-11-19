@@ -39,7 +39,7 @@ jobs:
       - name: Bump Version
         run: npm version ${{ github.event.inputs.version }}
 
-      - name: Publish to GitHub Packages
+      - name: Publish to NPM
         run: npm publish --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
