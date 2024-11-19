@@ -13,7 +13,7 @@ jobs:
     name: Release
     runs-on: ubuntu-latest
     permissions:
-        contents: read
+        contents: write
         id-token: write
     steps:
       - name: Checkout
@@ -46,6 +46,7 @@ jobs:
 
       - name: Push Git Tag
         run: git push --follow-tags
+
 
   
     
