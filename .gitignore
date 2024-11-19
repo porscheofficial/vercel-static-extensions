@@ -127,6 +127,3 @@ dist
 build
 vercel-static-extensions.config.json
 .vercel
-
-# Do not publish lock file
-package-lock.json

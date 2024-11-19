@@ -5,18 +5,22 @@
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/porscheofficial/vercel-static-extensions"
+		"url": "git+https://github.com/porscheofficial/vercel-static-extensions.git"
 	},
 	"scripts": {
 		"dev": "ts-node src/cli.ts",
 		"build": "node scripts/build.mjs"
 	},
-	"files": ["dist", "README.md", "LICENSE.md"],
+	"files": [
+		"dist",
+		"README.md",
+		"LICENSE.md"
+	],
 	"engines": {
 		"node": ">= 18"
 	},
 	"bin": {
-		"@porscheofficial/vercel-static-extensions": "dist/cli.js"
+		"vercel-static-extensions": "dist/cli.js"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "1.9.4",
