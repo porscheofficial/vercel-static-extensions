@@ -1,8 +1,22 @@
 {
 	"name": "@porscheofficial/vercel-static-extensions",
-	"version": "0.0.0",
-	"publishConfig": {
-		"registry": "https://npm.pkg.github.com"
+	"description": "A plug-and-play solution to implement authentication through Entra ID for static sites hosted on Vercel.",
+	"version": "0.1.0",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/porscheofficial/vercel-static-extensions"
+	},
+	"scripts": {
+		"dev": "ts-node src/cli.ts",
+		"build": "node scripts/build.mjs"
+	},
+	"files": ["dist", "README.md", "LICENSE.md"],
+	"engines": {
+		"node": ">= 18"
+	},
+	"bin": {
+		"@porscheofficial/vercel-static-extensions": "dist/cli.js"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "1.9.4",
@@ -17,16 +31,5 @@
 	"peerDependencies": {
 		"next-auth": ">5",
 		"esbuild": "0.24.0"
-	},
-	"scripts": {
-		"dev": "ts-node src/cli.ts",
-		"build": "node scripts/build.mjs"
-	},
-	"files": ["dist"],
-	"engines": {
-		"node": ">= 18"
-	},
-	"bin": {
-		"@porscheofficial/vercel-static-extensions": "dist/cli.js"
 	}
 }

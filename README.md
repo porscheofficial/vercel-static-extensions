@@ -19,7 +19,7 @@ npm install @porscheofficial/vercel-static-extensions
 ```json
 {
   "scripts": {
-    "postbuild": "@porscheofficial/vercel-static-extensions"
+    "postbuild": "vercel-static-extensions"
   }
 }
 ```

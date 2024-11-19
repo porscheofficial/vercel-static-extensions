@@ -12,6 +12,9 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
+    permissions:
+        contents: read
+        id-token: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -20,15 +23,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
         run: npm install
 
       - name: Build
         run: npm run build
-
-      - name: Set up GitHub Packages auth
-        run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" > ~/.npmrc
 
       - name: Configure Git user
         run: |
@@ -39,7 +40,9 @@ jobs:
         run: npm version ${{ github.event.inputs.version }} ${{ github.event.inputs.version }}
 
       - name: Publish to GitHub Packages
-        run: npm publish --registry=https://npm.pkg.github.com
+        run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
       - name: Push Git Tag
         run: git push --follow-tags
